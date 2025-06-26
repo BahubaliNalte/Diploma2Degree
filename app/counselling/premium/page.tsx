@@ -53,22 +53,36 @@ export default function PremiumPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const authUnsub = auth.onAuthStateChanged(async (user) => {
+    let plusRef: ReturnType<typeof dbRef> | null = null;
+    let unsubscribe: (() => void) | null = null;
+    const authUnsub = auth.onAuthStateChanged((user) => {
       if (!user) {
         setIsPlusMember(false);
         setLoading(false);
+        if (unsubscribe) unsubscribe();
         return;
       }
-      try {
-        const plusRef = dbRef(database, `PlusMembers/${user.uid}`);
-        const snapshot = await get(plusRef);
-        setIsPlusMember(snapshot.exists());
-      } catch (err) {
+      plusRef = dbRef(database, `PlusMembers`);
+      // Listen for real-time changes to all PlusMembers and check for matching uid
+      unsubscribe = onValue(plusRef, (snapshot) => {
+        let found = false;
+        snapshot.forEach((child) => {
+          const data = child.val();
+          if (data && data.uid === user.uid) {
+            found = true;
+          }
+        });
+        setIsPlusMember(found);
+        setLoading(false);
+      }, (err) => {
         setIsPlusMember(false);
-      }
-      setLoading(false);
+        setLoading(false);
+      });
     });
-    return () => authUnsub();
+    return () => {
+      authUnsub();
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

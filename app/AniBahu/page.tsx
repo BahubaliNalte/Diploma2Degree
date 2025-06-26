@@ -56,7 +56,7 @@ const adminSections = [
 
 export default function AdminPage() {
 	const [section, setSection] = useState(adminSections[0].key);
-	const [premiumPrice, setPremiumPrice] = useState(299);
+	const [premiumPrice, setPremiumPrice] = useState<number | null>(null);
 	const [priceInput, setPriceInput] = useState("");
 	const [priceLoading, setPriceLoading] = useState(false);
 	const [priceMsg, setPriceMsg] = useState("");
@@ -77,7 +77,7 @@ export default function AdminPage() {
 		setPriceLoading(true);
 		setPriceMsg("");
 		try {
-			await set(dbRef(database, "PremiumPrice"), newPrice);
+			await set(dbRef(database, "AppConfig/PlusMembershipPrice"), newPrice);
 			setPremiumPrice(newPrice);
 			setPriceMsg("Price updated!");
 			setPriceInput("");
@@ -88,6 +88,14 @@ export default function AdminPage() {
 	};
 
 	useEffect(() => {
+		// Fetch current premium price from AppConfig/PlusMembershipPrice
+		const priceRef = dbRef(database, "AppConfig/PlusMembershipPrice");
+		get(priceRef).then((snap) => {
+			if (snap.exists()) {
+				setPremiumPrice(snap.val());
+			}
+		});
+
 		const unsubscribe = onAuthStateChanged(auth, async (user) => {
 			if (user) {
 				const userRef = dbRef(database, `Users/${user.uid}`);
@@ -167,7 +175,9 @@ export default function AdminPage() {
 							<div className="mb-8 p-4 bg-[#f0f4ff] rounded-xl flex flex-col md:flex-row items-center gap-4">
 								<div className="font-semibold text-[#4300FF]">
 									Current Premium Price:{" "}
-									<span className="text-black">₹{premiumPrice}</span>
+									<span className="text-black">
+										₹{premiumPrice !== null ? premiumPrice : "--"}
+									</span>
 								</div>
 								<input
 									type="number"
