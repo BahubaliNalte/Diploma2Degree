@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+
+
+
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+}
+
+input::placeholder, textarea::placeholder, select::placeholder {
+  font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
+  font-size: 1rem;
+  color: #a3a3a3;
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  input::placeholder, textarea::placeholder, select::placeholder {
+    font-size: 0.98rem;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
+    color: #a3a3a3;
+    opacity: 1;
+  }
+}
