@@ -10,15 +10,24 @@ export default function FeedbackImagesLanding() {
   const [current, setCurrent] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Manual fallback images
+  const manualImages: string[] = [
+    "/FeedBack Img/feedback-1.jpg",
+    "/FeedBack Img/feedback-2.jpg",
+    "/FeedBack Img/feedback-3.jpg",
+    "/FeedBack Img/feedback-4.jpg",
+    // Add more as needed
+  ];
+
   useEffect(() => {
     const imgRef = ref(database, "feedbackImages");
     const unsubscribe = onValue(imgRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const arr = Object.values(data).map((img: any) => img.imageUrl || "");
-        setImages(arr);
+        setImages(arr.length > 0 ? arr : manualImages);
       } else {
-        setImages([]);
+        setImages(manualImages);
       }
       setLoading(false);
     });

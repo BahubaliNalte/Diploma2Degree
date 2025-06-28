@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { database } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 
+// Manual fallback images (public/FeedBack Img/feedback-*.jpg)
 export default function FeedbackImagesLanding() {
+  const manualImages = [
+    "/FeedBack Img/feedback-1.jpg",
+    "/FeedBack Img/feedback-2.jpg",
+    "/FeedBack Img/feedback-3.jpg",
+    "/FeedBack Img/feedback-4.jpg",
+  ];
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
@@ -16,9 +23,9 @@ export default function FeedbackImagesLanding() {
       const data = snapshot.val();
       if (data) {
         const arr = Object.values(data).map((img: any) => img.imageUrl || "");
-        setImages(arr);
+        setImages(arr.length > 0 ? arr : manualImages);
       } else {
-        setImages([]);
+        setImages(manualImages);
       }
       setLoading(false);
     });

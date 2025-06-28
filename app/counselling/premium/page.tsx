@@ -330,7 +330,7 @@ export default function PremiumPage() {
           <p className="text-gray-700 mb-4">We have received your details. </p>
           <div className="bg-[#e0ffe7] text-[#22c55e] font-semibold rounded p-3 mt-2">
             🎉 As a thank you, you get a <span className="text-[#4300FF]">special discount</span> on our Premium Membership!<br/>
-            Use your registered email/phone to claim your offer when premium opens.
+          
           </div>
         </div>
       );

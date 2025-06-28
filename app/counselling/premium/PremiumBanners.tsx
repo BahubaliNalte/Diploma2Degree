@@ -14,6 +14,35 @@ export default function PremiumBanners() {
   const [currentBanner, setCurrentBanner] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Manual fallback banners
+  const manualBanners: Banner[] = [
+    {
+      imageUrl: "/Banner/Banner1.png",
+      text: "Get expert guidance for your engineering journey!",
+    },
+    {
+      imageUrl: "/Banner/Banner6.jpeg",
+      text: "Unlock premium features and college lists!",
+    },
+    {
+      imageUrl: "/Banner/Banner3.png",
+      text: "Book your slot for 1:1 mentorship now!",
+    },
+     {
+      imageUrl: "/Banner/b1.jpg",
+      text: "Get expert guidance for your engineering journey!",
+    },
+    {
+      imageUrl: "/Banner/b2.jpg",
+      text: "Unlock premium features and college lists!",
+    },
+    {
+      imageUrl: "/Banner/Banner4.jpg",
+      text: "Book your slot for 1:1 mentorship now!",
+    },
+    // Add more banners as needed
+  ];
+
   useEffect(() => {
     const bannerRef = ref(database, "banners");
     const unsubscribe = onValue(bannerRef, (snapshot) => {
@@ -23,9 +52,9 @@ export default function PremiumBanners() {
           imageUrl: b.imageUrl || "",
           text: b.text || "",
         }));
-        setBanners(arr);
+        setBanners(arr.length > 0 ? arr : manualBanners);
       } else {
-        setBanners([]);
+        setBanners(manualBanners);
       }
     });
     return () => unsubscribe();
