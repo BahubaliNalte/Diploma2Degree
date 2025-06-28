@@ -8,6 +8,7 @@ import { useAuth } from './useAuth'
 import { useEffect } from 'react'
 import Script from 'next/script'
 import Analytics from './analytics'
+import DevToolsBlocker from '@/components/DevToolsBlocker';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -79,6 +80,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <DevToolsBlocker />
         <Analytics />
         {children}
         <Toaster position="top-center" />
