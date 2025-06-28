@@ -42,7 +42,7 @@ export default function RootLayout({
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', 'G-XXXXXXXXXX', {
+      window.gtag('config', 'G-0NBRXY1124', {
         page_path: pathname,
       })
     }
@@ -62,7 +62,7 @@ export default function RootLayout({
         {/* Google Analytics Scripts */}
         <Script
           strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX`}
+          src={`https://www.googletagmanager.com/gtag/js?id=G-0NBRXY1124`}
         />
         <Script
           id="gtag-init"
@@ -72,7 +72,7 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-XXXXXXXXXX', {
+              gtag('config', 'G-0NBRXY1124', {
                 page_path: window.location.pathname,
               });
             `,

@@ -1,4 +1,4 @@
-export const GA_TRACKING_ID = 'G-XXXXXXXXXX'
+export const GA_TRACKING_ID = 'G-0NBRXY1124'
 
 // Log page views
 export const pageview = (url: string) => {
