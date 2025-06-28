@@ -225,7 +225,7 @@ export default function CollegeListPage() {
     ...requiredCategories
   ]);
 
-  // Mapping of main categories to their subcategories (from image)
+  // Mapping of main categories to their subcategories 
   const mainCategoryMap: { [key: string]: string[] } = {
     OBC: ["GOBC", "LOBC", "PWDR-OBC", "DEFR-OBC", "DEFA-OBC"],
     SC: ["GSC", "LSC", "PWDR-SC", "DEFR-SC"],
@@ -237,13 +237,13 @@ export default function CollegeListPage() {
     "NT(D)": ["GNTD", "LNTD"],
     "OPEN / GENERAL": ["GOPEN", "LOPEN", "PWD-O", "GORD"],
     EWS: ["EWS"],
-    "Minority": ["Mi"],
+    "Minority": ["MI"],
     "PWD (Disability)": ["PWD-O", "PWDA-SEBC", "PWDR-OBC", "PWDR-SC", "PWDR-SEBC"],
     DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-DBC", "DEFA-OBC"]
   };
   const mainCategories = Object.keys(mainCategoryMap);
 
-
+// City and district mapping for Maharashtra
  const cityDistrictMap: { [key: string]: string[] } = {
   "Mumbai": ["Mumbai", "Andheri", "Panvel", "Thane", "Kalyan", "Ulhasnagar", "Vasai", "Virar", "Navi Mumbai", "Dombivli"],
   "Pune": ["Pune", "Ravet", "Narhe", "Wagholi", "Lonavala", "Pisoli", "Sasewadi"],
