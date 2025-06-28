@@ -28,18 +28,7 @@ export default function PremiumBanners() {
       imageUrl: "/Banner/Banner3.png",
       text: "Book your slot for 1:1 mentorship now!",
     },
-     {
-      imageUrl: "/Banner/b1.jpg",
-      text: "Get expert guidance for your engineering journey!",
-    },
-    {
-      imageUrl: "/Banner/b2.jpg",
-      text: "Unlock premium features and college lists!",
-    },
-    {
-      imageUrl: "/Banner/Banner4.jpg",
-      text: "Book your slot for 1:1 mentorship now!",
-    },
+
     // Add more banners as needed
   ];
 
