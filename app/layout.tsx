@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from './useAuth';
 import { useEffect } from 'react';
+import DevToolsBlocker from "@/components/DevToolsBlocker";
 
 
 const geistSans = Geist({
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+          <DevToolsBlocker />
         {children}
         <Toaster position="top-center" />
       </body>

@@ -215,10 +215,70 @@ export default function CollegeListPage() {
     "Textile Technology",
     "VLSI"
   ];
-  const dataBranches = unique(colleges.map((c) => c["Course Name"]))
+
+  // Branch mapping for display/normalization
+const branchMap: { [key: string]: string } = {
+    "Artificial Intelligence and Data Science": "Artificial Intelligence and Data Science",
+    "Artificial Intelligence (AI) and Data Science": "Artificial Intelligence and Data Science",
+    "Computer Science and Engineering (Artificial Intelligence and Data Science)": "Artificial Intelligence and Data Science",
+    "Computer Science and Engineering(Artificial Intelligence and Data Science)": "Artificial Intelligence and Data Science",
+    "Artificial Intelligence and Machine Learning": "Artificial Intelligence and Machine Learning",
+    "Computer Science and Engineering(Artificial Intelligence and Machine Learning)": "Artificial Intelligence and Machine Learning",
+    "Computer Science and Engineering (Artificial Intelligence)": "Artificial Intelligence",
+    "Artificial Intelligence": "Artificial Intelligence",
+    "Computer Science and Engineering(Cyber Security)": "Cyber Security",
+    "Cyber Security": "Cyber Security",
+    "Computer Science and Engineering (Cyber Security)": "Cyber Security",
+    "Data Science": "Data Science",
+    "Computer Science and Engineering(Data Science)": "Data Science",
+    "Internet of Things (IoT)": "Internet of Things",
+    "Computer Science and Engineering (IoT)": "Internet of Things",
+    "Industrial IoT": "Internet of Things",
+    "Computer Science and Engineering (Internet of Things and Cyber Security Including Block Chain Technology)": "Internet of Things and Cyber Security Including Block Chain Technology",
+    "Computer Science": "Computer Science and Engineering",
+    "Computer Science and Engineering": "Computer Science and Engineering",
+    "Computer Engineering": "Computer Science and Engineering",
+    "Computer Technology": "Computer Science and Engineering",
+    "Computer Science and Technology": "Computer Science and Engineering",
+    "Information Technology": "Information Technology",
+    "Electronics and Telecommunication Engineering": "Electronics and Telecommunication Engineering",
+    "Electronics and Telecommunication Engg": "Electronics and Telecommunication Engineering",
+    "Electronics and Telecommunication Engineering[Direct Second Year Second Shift]": "Electronics and Telecommunication Engineering",
+    "Electronics Engineering": "Electronics Engineering",
+    "Electrical Engineering": "Electrical Engineering",
+    "Electrical and Electronics Engineering": "Electrical and Electronics Engineering",
+    "Electrical Engg [Electrical and Power]": "Electrical Engineering",
+    "Electrical Engg[Electronics and Power]": "Electrical Engineering",
+    "Mechanical Engineering": "Mechanical Engineering",
+    "Mechanical & Automation Engineering": "Mechanical Engineering",
+    "Mechanical and Mechatronics Engineering (Additive Manufacturing)": "Mechanical Engineering",
+    "Mechatronics Engineering": "Mechatronics Engineering",
+    "Civil Engineering": "Civil Engineering",
+    "Civil Engineering and Planning": "Civil Engineering",
+    "Civil and Environmental Engineering": "Civil Engineering",
+    "Civil and infrastructure Engineering": "Civil Engineering",
+    "Instrumentation Engineering": "Instrumentation Engineering",
+    "Instrumentation and Control Engineering": "Instrumentation Engineering",
+    "Printing Technology": "Printing Technology",
+    "Production Engineering": "Production Engineering",
+    "Production Engineering[Sandwich]": "Production Engineering",
+    "Robotics and Automation": "Robotics and Automation",
+    "Robotics and Artificial Intelligence": "Robotics and Artificial Intelligence",
+    // ... add more as needed ...
+  };
+
+// Reverse mapping: full branch name -> all possible variants
+const reverseBranchMap: { [key: string]: string[] } = {};
+Object.entries(branchMap).forEach(([variant, full]) => {
+  if (!reverseBranchMap[full]) reverseBranchMap[full] = [];
+  reverseBranchMap[full].push(variant);
+});
+  // Normalize branch names for filtering and display
+  const normalizeBranch = (branch: string) => branchMap[branch] || branch;
+  const dataBranches = unique(colleges.map((c) => normalizeBranch(c["Course Name"])))
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
-  const allBranches = unique([...dataBranches, ...requiredBranches]).sort((a, b) => a.localeCompare(b));
+  const allBranches = unique([...dataBranches, ...requiredBranches.map(normalizeBranch)]).sort((a, b) => a.localeCompare(b));
   // Merge unique categories from data and required list
   const categories = unique([
     ...colleges.flatMap((c) => c.Cutoffs ? c.Cutoffs.map((cut: Cutoff) => cut.Category) : []),
@@ -239,26 +299,85 @@ export default function CollegeListPage() {
     EWS: ["EWS"],
     "Minority": ["MI"],
     "PWD (Disability)": ["PWD-O", "PWDA-SEBC", "PWDR-OBC", "PWDR-SC", "PWDR-SEBC"],
-    DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-DBC", "DEFA-OBC"]
+    DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-NTC", "DEFR-NTD", "DEFA-OBC"]
   };
   const mainCategories = Object.keys(mainCategoryMap);
 
-// City and district mapping for Maharashtra
- const cityDistrictMap: { [key: string]: string[] } = {
-  "Mumbai": ["Mumbai", "Andheri", "Panvel", "Thane", "Kalyan", "Ulhasnagar", "Vasai", "Virar", "Navi Mumbai", "Dombivli"],
-  "Pune": ["Pune", "Ravet", "Narhe", "Wagholi", "Lonavala", "Pisoli", "Sasewadi"],
-  "Nagpur": ["Nagpur", "Ramtek"],
-  "Aurangabad": ["Aurangabad", "Sambhajinagar"],
-  "Nashik": ["Nashik", "Ohar"],
-  "Kolhapur": ["Kolhapur", "Warananagar", "Gadhinglaj"],
-  "Solapur": ["Solapur", "Pandharpur"]
+// City and district mapping for Maharashtra (expanded)
+const cityDistrictMap: { [key: string]: string[] } = {
+  mumbai: ["mumbai", "thane", "navi mumbai", "panvel", "kalyan", "dombivli", "vasai", "virar", "andheri", "boisar", "ulhasnagar", "badlapur"],
+  pune: ["pune", "pcmc", "hadapsar", "wagholi", "shivaji nagar", "kothrud", "baramati", "lonavala", "narhe", "pisoli", "ravet", "sasewadi", "warje", "bhor", "indapur"],
+  nagpur: ["nagpur", "wardha", "bhandara", "ramtek", "sevagram", "sindhi", "badravati", "bamni"],
+  nashik: ["nashik", "malegaon", "satana", "kopargaon", "sinnar", "niphad", "egatpuri", "phar"],
+  aurangabad: ["aurangabad", "jalna", "paithan", "sambhajinagar", "beed", "ambejogai", "dharashiv", "tuljapur"],
+  kolhapur: ["kolhapur", "ichalkaranji", "karvir", "gadhinglaj", "jaysingpur", "miraj", "sangli", "yadrav", "warananagar", "panhala"],
+  ahmednagar: ["ahmednagar", "nagar", "sangamner", "nepti"],
+  akola: ["akola"],
+  amravati: ["amravati", "badnera", "chandrapur"],
+  bhusawal: ["bhusawal"],
+  buldhana: ["buldhana", "chikhali", "shegaon"],
+  chandrapur: ["chandrapur"],
+  dhule: ["dhule", "shirpur"],
+  jalgaon: ["jalgaon", "faizpur"],
+  karad: ["karad"],
+  latur: ["latur", "tuljapur", "dharashiv"],
+  nanded: ["nanded"],
+  nandurbar: ["nandurbar"],
+  parbhani: ["parbhani"],
+  ratnagiri: ["ratnagiri", "deorukh", "kankavli"],
+  sangli: ["sangli", "sangola", "miraj", "jaysingpur"],
+  satara: ["satara", "phaltan", "panhala", "paniv"],
+  solapur: ["solapur", "barshi", "pandharpur", "akluj"],
+  wardha: ["wardha", "sevagram"],
+  washim: ["washim"],
+  yavatmal: ["yavatmal"],
+  lonere: ["lonere"],
+  akkalkuwa: ["akkalkuwa"],
+  dumbarwadi: ["dumbarwadi"],
+  haveli: ["haveli"],
+  isigaon: ["isigaon"],
+  karjat: ["karjat"],
+  khurd: ["khurd"],
+  kuran: ["kuran"],
+  lakoll: ["lakoll"],
+  nageer: ["nageer"],
+  sakoll: ["sakoll"],
+  shahapur: ["shahapur"],
+  shirgaon: ["shirgaon"],
+  sukhali: ["sukhali"],
+  wadwadi: ["wadwadi"],
+  waghall: ["waghall"],
+  yelgaon: ["yelgaon"],
+  panvel: ["panvel"],
+  raigad: ["raigad"]
 };
 
-  // Filtering logic
+  // Filtering logic with reverse branch and city mapping
   const filtered = colleges.filter((college) => {
-   const cityList = cityDistrictMap[location] || [location];
-const matchesLocation = location ? cityList.includes(college.City) : true;
-    const matchesStream = stream ? college["Course Name"] === stream : true;
+    // Reverse city mapping: if a location is selected, get all related cities for that location
+    let cityList: string[] = [location];
+    // If the selected location is a key in cityDistrictMap, use its mapped cities
+    if (location && cityDistrictMap[location.toLowerCase()]) {
+      cityList = cityDistrictMap[location.toLowerCase()];
+    } else if (location) {
+      // Also check if the selected location is present in any of the city groups (e.g., selecting 'thane' should return 'mumbai' group)
+      for (const [group, cities] of Object.entries(cityDistrictMap)) {
+        if (cities.map(c => c.toLowerCase()).includes(location.toLowerCase())) {
+          cityList = cities;
+          break;
+        }
+      }
+    }
+    const matchesLocation = location ? cityList.map(c => c.toLowerCase()).includes(college.City.toLowerCase()) : true;
+    // Use reverseBranchMap: if a stream is selected, get all normalized variants for that stream
+    let matchesStream = true;
+    if (stream) {
+      // Find the normalized branch for the selected stream (if it's a variant)
+      const normalized = branchMap[stream] || stream;
+      // Get all possible variants for this normalized branch
+      const variants = reverseBranchMap[normalized] || [normalized];
+      matchesStream = variants.includes(college["Course Name"]) || normalizeBranch(college["Course Name"]) === normalized;
+    }
     let minCutoff = null;
     if (college.Cutoffs && college.Cutoffs.length > 0 && category) {
       const cat = college.Cutoffs.find((c) => c.Category === category);
@@ -371,7 +490,7 @@ const matchesLocation = location ? cityList.includes(college.City) : true;
           required
         >
           <option value="">Select Branch</option>
-          {allBranches.map((s, i) => (
+          {requiredBranches.sort((a, b) => a.localeCompare(b)).map((s, i) => (
             <option key={i} value={s}>{s}</option>
           ))}
         </select>
@@ -449,7 +568,7 @@ const matchesLocation = location ? cityList.includes(college.City) : true;
                         </div>
                         <div className="flex flex-wrap gap-4 text-gray-700 text-base mb-2">
                           <span>📍 <span className="font-medium">{college.City}</span></span>
-                          <span>🎓 <span className="font-medium">{college["Course Name"]}</span></span>
+                          <span>🎓 <span className="font-medium">{normalizeBranch(college["Course Name"])}{/* Show normalized branch */}</span></span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                           <span className="font-semibold text-gray-800">Cutoff ({category}):</span>

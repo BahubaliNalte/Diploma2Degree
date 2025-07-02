@@ -1,10 +1,11 @@
-export const runtime = "nodejs";
 
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
+import admin from "../../../lib/firebaseAdmin";
 
 export async function POST(req: NextRequest) {
   try {
-    const { amount, currency } = await req.json();
+    const { amount, currency, userUid } = await req.json(); // userUid must be sent from frontend
     const key_id = process.env.RAZORPAY_KEY_ID;
     const key_secret = process.env.RAZORPAY_SECRET;
     if (!key_id || !key_secret) {
@@ -20,6 +21,10 @@ export async function POST(req: NextRequest) {
       receipt: `rcpt_${Date.now()}`,
     };
     const order = await instance.orders.create(options);
+    // Save order_id <-> userUid mapping for webhook
+    if (userUid && order && order.id) {
+      await admin.database().ref("Orders/" + order.id + "/uid").set(userUid);
+    }
     return NextResponse.json({ success: true, order });
   } catch (err) {
     console.error("Razorpay order creation error:", err);

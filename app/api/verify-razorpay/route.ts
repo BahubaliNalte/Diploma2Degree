@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import admin from "../../../lib/firebaseAdmin";
 
 export async function POST(req: NextRequest) {
   try {
