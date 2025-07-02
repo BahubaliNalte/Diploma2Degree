@@ -27,7 +27,11 @@ const unique = (array: string[]) => Array.from(new Set(array));
 export default function CollegeListPage() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [location, setLocation] = useState("");
-  const [stream, setStream] = useState("");
+  // Branch filtering states
+  const [mainBranch, setMainBranch] = useState("");
+  const [subBranch, setSubBranch] = useState("");
+  // Caste filtering states
+  const [stream, setStream] = useState(""); // legacy, will be replaced by mainBranch/subBranch
   const [category, setCategory] = useState("");
   const [mainCategory, setMainCategory] = useState("");
   const [diplomaPercent, setDiplomaPercent] = useState<number | null>(null);
@@ -275,10 +279,26 @@ Object.entries(branchMap).forEach(([variant, full]) => {
 });
   // Normalize branch names for filtering and display
   const normalizeBranch = (branch: string) => branchMap[branch] || branch;
-  const dataBranches = unique(colleges.map((c) => normalizeBranch(c["Course Name"])))
-    .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b));
-  const allBranches = unique([...dataBranches, ...requiredBranches.map(normalizeBranch)]).sort((a, b) => a.localeCompare(b));
+  const dataBranches = unique(
+    colleges.map((c) => normalizeBranch(c["Course Name"]))
+  ).filter(Boolean).sort((a, b) => a.localeCompare(b));
+  const allBranches = unique([
+    ...dataBranches,
+    ...requiredBranches.map(normalizeBranch)
+  ]).sort((a, b) => a.localeCompare(b));
+
+  // Main branch mapping: main branch -> all its sub-branches/variants
+  // This is similar to reverseBranchMap, but for dropdowns
+  const mainBranchMap: { [key: string]: string[] } = {};
+  Object.entries(branchMap).forEach(([variant, main]) => {
+    if (!mainBranchMap[main]) mainBranchMap[main] = [];
+    if (!mainBranchMap[main].includes(variant)) mainBranchMap[main].push(variant);
+  });
+  // Add main branch itself if not present
+  Object.keys(mainBranchMap).forEach(main => {
+    if (!mainBranchMap[main].includes(main)) mainBranchMap[main].push(main);
+  });
+  const mainBranches = Object.keys(mainBranchMap).sort((a, b) => a.localeCompare(b));
   // Merge unique categories from data and required list
   const categories = unique([
     ...colleges.flatMap((c) => c.Cutoffs ? c.Cutoffs.map((cut: Cutoff) => cut.Category) : []),
@@ -352,15 +372,13 @@ const cityDistrictMap: { [key: string]: string[] } = {
   raigad: ["raigad"]
 };
 
-  // Filtering logic with reverse branch and city mapping
+  // Filtering logic with mainBranch/subBranch and city mapping
   const filtered = colleges.filter((college) => {
     // Reverse city mapping: if a location is selected, get all related cities for that location
     let cityList: string[] = [location];
-    // If the selected location is a key in cityDistrictMap, use its mapped cities
     if (location && cityDistrictMap[location.toLowerCase()]) {
       cityList = cityDistrictMap[location.toLowerCase()];
     } else if (location) {
-      // Also check if the selected location is present in any of the city groups (e.g., selecting 'thane' should return 'mumbai' group)
       for (const [group, cities] of Object.entries(cityDistrictMap)) {
         if (cities.map(c => c.toLowerCase()).includes(location.toLowerCase())) {
           cityList = cities;
@@ -369,15 +387,21 @@ const cityDistrictMap: { [key: string]: string[] } = {
       }
     }
     const matchesLocation = location ? cityList.map(c => c.toLowerCase()).includes(college.City.toLowerCase()) : true;
-    // Use reverseBranchMap: if a stream is selected, get all normalized variants for that stream
-    let matchesStream = true;
-    if (stream) {
-      // Find the normalized branch for the selected stream (if it's a variant)
-      const normalized = branchMap[stream] || stream;
-      // Get all possible variants for this normalized branch
-      const variants = reverseBranchMap[normalized] || [normalized];
-      matchesStream = variants.includes(college["Course Name"]) || normalizeBranch(college["Course Name"]) === normalized;
+
+    // Branch filtering logic
+    let matchesBranch = true;
+    if (mainBranch) {
+      if (subBranch) {
+        // If subBranch selected, match only that sub branch (variant, exact match only)
+        matchesBranch = college["Course Name"] === subBranch;
+      } else {
+        // If only mainBranch selected, match any of its variants
+        const variants = mainBranchMap[mainBranch] || [mainBranch];
+        matchesBranch = variants.includes(college["Course Name"]);
+      }
     }
+
+    // Caste/category filtering (unchanged)
     let minCutoff = null;
     if (college.Cutoffs && college.Cutoffs.length > 0 && category) {
       const cat = college.Cutoffs.find((c) => c.Category === category);
@@ -390,10 +414,9 @@ const cityDistrictMap: { [key: string]: string[] } = {
         minCutoff = parseFloat(gopen.Score.replace("%", ""));
       }
     }
-    // Attach minCutoff to college for sorting
     (college as any)._minCutoff = minCutoff;
     const matchesCutoff = diplomaPercent !== null ? (minCutoff !== null && diplomaPercent >= minCutoff) : true;
-    return matchesLocation && matchesStream && matchesCutoff;
+    return matchesLocation && matchesBranch && matchesCutoff;
   })
   // Sort: exact match first, then by closest higher cutoff, then others
   .sort((a, b) => {
@@ -423,8 +446,13 @@ const cityDistrictMap: { [key: string]: string[] } = {
     setDiplomaPercent(value);
     if (value === null) setFormSubmitted(false);
   };
-  const handleStreamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStream(e.target.value);
+  const handleMainBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMainBranch(e.target.value);
+    setSubBranch("");
+    if (e.target.value === "") setFormSubmitted(false);
+  };
+  const handleSubBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSubBranch(e.target.value);
     if (e.target.value === "") setFormSubmitted(false);
   };
   const handleMainCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -445,13 +473,13 @@ const cityDistrictMap: { [key: string]: string[] } = {
   useEffect(() => {
     if (
       diplomaPercent === null ||
-      stream === "" ||
+      mainBranch === "" ||
       mainCategory === "" ||
       location === ""
     ) {
       if (formSubmitted) setFormSubmitted(false);
     }
-  }, [diplomaPercent, stream, mainCategory, location]);
+  }, [diplomaPercent, mainBranch, mainCategory, location]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#f8faff] to-[#e0e7ff] px-2 md:px-20 py-8 md:py-16 font-poppins">
@@ -484,16 +512,28 @@ const cityDistrictMap: { [key: string]: string[] } = {
           required
         />
         <select
-          value={stream}
-          onChange={handleStreamChange}
+          value={mainBranch}
+          onChange={handleMainBranchChange}
           className="p-3 border border-[#b3b3ff] rounded-lg focus:ring-2 focus:ring-[#4300FF] outline-none transition w-full text-gray-900 bg-white"
           required
         >
-          <option value="">Select Branch</option>
-          {requiredBranches.sort((a, b) => a.localeCompare(b)).map((s, i) => (
-            <option key={i} value={s}>{s}</option>
+          <option value="">Select Main Branch</option>
+          {mainBranches.map((mb, i) => (
+            <option key={i} value={mb}>{mb}</option>
           ))}
         </select>
+        {mainBranch && (
+          <select
+            value={subBranch}
+            onChange={handleSubBranchChange}
+            className="p-3 border border-[#b3b3ff] rounded-lg focus:ring-2 focus:ring-[#4300FF] outline-none transition w-full text-gray-900 bg-white"
+          >
+            <option value="">Select Sub Branch (optional)</option>
+            {mainBranchMap[mainBranch].map((sb, i) => (
+              <option key={i} value={sb}>{sb}</option>
+            ))}
+          </select>
+        )}
         <select
           value={mainCategory}
           onChange={handleMainCategoryChange}
@@ -539,15 +579,52 @@ const cityDistrictMap: { [key: string]: string[] } = {
       {/* College Cards */}
       {loading ? (
         <p className="text-center text-gray-500 mt-10">Loading colleges...</p>
-      ) : formSubmitted && diplomaPercent !== null && stream && mainCategory && location ? (
+      ) : formSubmitted && diplomaPercent !== null && mainBranch && mainCategory && location ? (
         <div className="w-full flex flex-col gap-6">
           {filtered.length === 0 ? (
             <p className="text-center text-gray-500 mt-10 col-span-full">No colleges match your criteria.</p>
           ) : (
             <div className="w-full flex flex-col gap-6">
               {filtered.slice(0, 20).map((college, index) => {
-                // If subcategory is selected, show only that cutoff
-                if (category) {
+                // If both subBranch and category are selected, show only that branch and cutoff
+                if (subBranch && category) {
+                  const selectedCutoff = college.Cutoffs && college.Cutoffs.find((cut: Cutoff) => cut.Category === category);
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      viewport={{ once: true }}
+                      className="bg-white/90 border border-[#e0e7ff] rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col md:flex-row items-start md:items-center p-5 md:p-8 gap-4 md:gap-8"
+                    >
+                      <div className="flex-1 w-full">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg font-bold text-[#4300FF]">{index + 1}.</span>
+                          <h3 className="text-xl md:text-2xl font-bold text-[#0065F8] flex flex-wrap items-center gap-2">
+                            <span>{college["College Name"]}</span>
+                            <span className="inline-block bg-[#E0F7FF] text-[#0065F8] text-xs font-semibold px-2 py-1 rounded-full ml-2">{college.Status}</span>
+                          </h3>
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-gray-700 text-base mb-2">
+                          <span>📍 <span className="font-medium">{college.City}</span></span>
+                          <span>🎓 <span className="font-medium">{college["Course Name"]}</span></span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                          <span className="font-semibold text-gray-800">Cutoff ({category}):</span>
+                          {selectedCutoff ? (
+                            <span className="bg-[#F0F8FF] text-[#0065F8] px-3 py-1 rounded-full text-sm font-semibold">
+                              {selectedCutoff.Score} <span className="text-gray-500">(Rank: {selectedCutoff.Rank})</span>
+                            </span>
+                          ) : (
+                            <span className="text-gray-500 text-sm">No cutoff data for this category.</span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                } else if (category) {
+                  // If only category is selected, show only that cutoff (all branches)
                   const selectedCutoff = college.Cutoffs && college.Cutoffs.find((cut: Cutoff) => cut.Category === category);
                   return (
                     <motion.div

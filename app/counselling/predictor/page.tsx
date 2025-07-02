@@ -27,7 +27,9 @@ const unique = (array: string[]) => Array.from(new Set(array));
 export default function PredictorPage() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [score, setScore] = useState<number | null>(null);
-  const [stream, setStream] = useState("");
+  // Branch filtering states
+  const [mainBranch, setMainBranch] = useState("");
+  const [subBranch, setSubBranch] = useState("");
   const [location, setLocation] = useState("");
   const [predictions, setPredictions] = useState<College[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -215,6 +217,18 @@ Object.entries(branchMap).forEach(([variant, full]) => {
     .sort((a, b) => a.localeCompare(b));
   const allBranches = unique([...dataBranches, ...requiredBranches.map(normalizeBranch)]).sort((a, b) => a.localeCompare(b));
 
+  // Main branch mapping: main branch -> all its sub-branches/variants
+  const mainBranchMap: { [key: string]: string[] } = {};
+  Object.entries(branchMap).forEach(([variant, main]) => {
+    if (!mainBranchMap[main]) mainBranchMap[main] = [];
+    if (!mainBranchMap[main].includes(variant)) mainBranchMap[main].push(variant);
+  });
+  // Add main branch itself if not present
+  Object.keys(mainBranchMap).forEach(main => {
+    if (!mainBranchMap[main].includes(main)) mainBranchMap[main].push(main);
+  });
+  const mainBranches = Object.keys(mainBranchMap).sort((a, b) => a.localeCompare(b));
+
   // Extended list of Maharashtra cities including new entries from user
   const maharashtraCities = [
     "Ahmednagar", "Akkalkuwa", "Akluj", "Akola", "Ambejogai", "Amravati", "Andheri", "Aurangabad", "Babulgaon", "Badlapur", "Badnera", "Badravati", "Bamni", "Baramati", "Barshi", "Beed", "Bhandara", "Bhandars", "Bhanders", "Bhima", "Bhor", "Bhusawal", "Boisar", "Buldhana", "Chandrapur", "Chikhali", "Deorukh", "Dharashiv", "Dhule", "Dumbarwadi", "Egaon", "Faizpur", "Falzpur", "Gadhinglaj", "Hagpur", "Haveli", "Indapur","Jalgaon", "Jalna", "Jaysingpur", "Kalyan", "Kankavli", "Karad", "Karjat", "Khurd", "Kolhapur", "Kopargaon", "Kuran", "Lakoll", "Latur", "Lonavala", "Lonere", "Mandal", "Miraj", "Mumbai", "Nagar",  "Nagpur", "Nanded", "Nandurbar", "Narhe", "Nashik", "Nepti", "Nile", "Ohar", "Palghar", "Pandharpur", "Panhala", "Paniv", "Panvel", "Parbhani", "Pisoli", "Pune", "Raigad", "Ramtek", "Ratnagiri", "Ravet","Sakoll", "Sambhajinagar",   "Sangamner", "Sangli", "Sangola", "Sasewadi", "Satara", "Sawantwadi", "Sevagram", "Shahapur", "Shegaon", "Shirgaon", "Shirpur", "Sindhi", "Sinnar", "Solapur", "Sukhall",  "Thane", "Tuljapur", "Ulhasnagar",  "Vasai", "Wadwadi", "Waghall", "Wagholi", "Warananagar", "Wardha", "Warghe", "Washim", "Yadrav", "Yavatmal", "Yelgaon"
@@ -233,14 +247,20 @@ Object.entries(branchMap).forEach(([variant, full]) => {
         }
       }
     }
-    // Use reverseBranchMap for matching all variants of the selected stream
-    const selectedBranchVariants = stream && reverseBranchMap[stream] ? reverseBranchMap[stream] : [stream];
-    const result = colleges.filter((college) => {
+    // Branch filtering logic
+    let result = colleges.filter((college) => {
       const matchesLocation = location ? cityList.map(c => c.toLowerCase()).includes(college.City.toLowerCase()) : true;
-      // Use normalized branch for filtering
-      const collegeBranch = normalizeBranch(college["Course Name"]);
-      // Match if college branch is any of the selected branch's variants
-      const matchesStream = stream ? selectedBranchVariants.includes(college["Course Name"]) : true;
+      let matchesBranch = true;
+      if (mainBranch) {
+        if (subBranch) {
+          // If subBranch selected, match only that sub branch (exact match)
+          matchesBranch = college["Course Name"] === subBranch;
+        } else {
+          // If only mainBranch selected, match any of its variants
+          const variants = mainBranchMap[mainBranch] || [mainBranch];
+          matchesBranch = variants.includes(college["Course Name"]);
+        }
+      }
       let minRank = null;
       if (college.Cutoffs && college.Cutoffs.length > 0 && category) {
         const cat = college.Cutoffs.find((c) => c.Category === category);
@@ -255,7 +275,7 @@ Object.entries(branchMap).forEach(([variant, full]) => {
       }
       (college as any)._minRank = minRank;
       const matchesRank = score !== null ? (minRank !== null && score <= minRank) : true;
-      return matchesStream && matchesLocation && matchesRank;
+      return matchesBranch && matchesLocation && matchesRank;
     })
     // Sort: exact match first, then by closest higher rank, then others
     .sort((a, b) => {
@@ -300,16 +320,31 @@ Object.entries(branchMap).forEach(([variant, full]) => {
           required
         />
         <select
-          value={stream}
-          onChange={e => setStream(e.target.value)}
+          value={mainBranch}
+          onChange={e => {
+            setMainBranch(e.target.value);
+            setSubBranch("");
+          }}
           className="p-3 border border-[#b3b3ff] rounded-lg focus:ring-2 focus:ring-[#4300FF] outline-none transition w-full text-gray-900 bg-white"
           required
         >
-          <option value="">Select Branch</option>
-          {requiredBranches.sort((a, b) => a.localeCompare(b)).map((s, i) => (
-            <option key={i} value={s}>{s}</option>
+          <option value="">Select Main Branch</option>
+          {mainBranches.map((mb, i) => (
+            <option key={i} value={mb}>{mb}</option>
           ))}
         </select>
+        {mainBranch && (
+          <select
+            value={subBranch}
+            onChange={e => setSubBranch(e.target.value)}
+            className="p-3 border border-[#b3b3ff] rounded-lg focus:ring-2 focus:ring-[#4300FF] outline-none transition w-full text-gray-900 bg-white"
+          >
+            <option value="">Select Sub Branch (optional)</option>
+            {mainBranchMap[mainBranch].map((sb, i) => (
+              <option key={i} value={sb}>{sb}</option>
+            ))}
+          </select>
+        )}
         <select
           value={mainCategory}
           onChange={e => {
@@ -352,7 +387,7 @@ Object.entries(branchMap).forEach(([variant, full]) => {
       <button
         onClick={handlePredict}
         className="bg-[#0065F8] hover:bg-[#00CAFF] text-white px-6 py-3 rounded-lg shadow mx-auto block"
-        disabled={loading || !score || !stream || !mainCategory || !location}
+        disabled={loading || !score || !mainBranch || !mainCategory || !location}
       >
         Predict Colleges
       </button>
@@ -360,7 +395,7 @@ Object.entries(branchMap).forEach(([variant, full]) => {
       {/* Result */}
       {loading ? (
         <p className="text-center text-gray-500 mt-10">Loading colleges...</p>
-      ) : !score || !stream || !mainCategory || !location ? (
+      ) : !score || !mainBranch || !mainCategory || !location ? (
         <p className="text-center text-red-500 mt-10 font-semibold">Please fill in Rank, Branch, Main Category, and City to see predictions.</p>
       ) : submitted && (
         <motion.div
@@ -376,8 +411,47 @@ Object.entries(branchMap).forEach(([variant, full]) => {
           <div className="w-full flex flex-col gap-6">
             {predictions.map((college, index) => {
               const listNumber = index + 1;
-              // If subcategory is selected, show only that cutoff
-              if (category) {
+              // If both subBranch and category are selected, show only that cutoff and branch
+              if (subBranch && category) {
+                // Only show if this college's course matches the subBranch exactly
+                if (college["Course Name"] !== subBranch) return null;
+                const selectedCutoff = college.Cutoffs && college.Cutoffs.find((cut) => cut.Category === category);
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.04 }}
+                    viewport={{ once: true }}
+                    className="bg-white/90 border border-[#e0e7ff] rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col md:flex-row items-start md:items-center p-5 md:p-8 gap-4 md:gap-8"
+                  >
+                    <div className="flex-1 w-full">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg font-bold text-[#4300FF]">{listNumber}.</span>
+                        <h3 className="text-xl md:text-2xl font-bold text-[#0065F8] flex flex-wrap items-center gap-2">
+                          <span>{college["College Name"]}</span>
+                          <span className="inline-block bg-[#E0F7FF] text-[#0065F8] text-xs font-semibold px-2 py-1 rounded-full ml-2">{college.Status}</span>
+                        </h3>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-gray-700 text-base mb-2">
+                        <span>📍 <span className="font-medium">{college.City}</span></span>
+                        <span>🎓 <span className="font-medium">{college["Course Name"]}</span></span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                        <span className="font-semibold text-gray-800">Cutoff ({category}):</span>
+                        {selectedCutoff ? (
+                          <span className="bg-[#F0F8FF] text-[#0065F8] px-3 py-1 rounded-full text-sm font-semibold">
+                            {selectedCutoff.Score} <span className="text-gray-500">(Rank: {selectedCutoff.Rank})</span>
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-sm">No cutoff data for this category.</span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              } else if (category) {
+                // If only sub category is selected, show only that cutoff for all branches
                 const selectedCutoff = college.Cutoffs && college.Cutoffs.find((cut) => cut.Category === category);
                 return (
                   <motion.div
