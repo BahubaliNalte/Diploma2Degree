@@ -4,7 +4,11 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Script from "next/script";
 import { auth, database } from "@/lib/firebase"; // Only import 'auth' if 'db' is not exported
+<<<<<<< HEAD
 import { ref as dbRef, set, onValue, get } from "firebase/database";
+=======
+import { ref as dbRef, set, onValue, get, push } from "firebase/database";
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import PremiumBanners from "./PremiumBanners";
@@ -221,6 +225,177 @@ export default function PremiumPage() {
     rzp.open();
   };
 
+<<<<<<< HEAD
+=======
+  // BookSlotForm component for pre-booking premium counselling
+  function BookSlotForm() {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState("");
+    const [checking, setChecking] = useState(true);
+
+    // Avoid shadowing 'set' from firebase/database
+    const setDb = set;
+
+    // Prefill email/phone if user is logged in
+    useEffect(() => {
+      if (auth.currentUser) {
+        if (auth.currentUser.email) setEmail(auth.currentUser.email);
+        if (auth.currentUser.phoneNumber) setPhone(auth.currentUser.phoneNumber.replace(/^\+91/, ""));
+        if (auth.currentUser.displayName) setName(auth.currentUser.displayName);
+      }
+    }, []);
+
+    // Check if user has already prebooked (by email or phone) on mount or when email/phone changes
+    useEffect(() => {
+      const checkExisting = async () => {
+        if (!email && !phone) {
+          setChecking(false);
+          return;
+        }
+        try {
+          const prebookRef = dbRef(database, "prebook");
+          const snapshot = await get(prebookRef);
+          let alreadyExists = false;
+          if (snapshot.exists()) {
+            snapshot.forEach(child => {
+              const data = child.val();
+              if ((email && data.email && data.email.trim().toLowerCase() === email.trim().toLowerCase()) || (phone && data.phone && data.phone.trim() === phone.trim())) {
+                alreadyExists = true;
+              }
+            });
+          }
+          if (alreadyExists) {
+            setSuccess(true);
+          }
+        } catch (e) {
+          // ignore
+        } finally {
+          setChecking(false);
+        }
+      };
+      checkExisting();
+    }, [email, phone]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
+      if (!name.trim() || !email.trim() || !/^\d{10}$/.test(phone)) {
+        setError("Please enter valid name, email, and 10-digit phone number.");
+        return;
+      }
+      setLoading(true);
+      try {
+        // Check for existing prebook with same email or phone
+        const prebookRef = dbRef(database, "prebook");
+        const snapshot = await get(prebookRef);
+        let alreadyExists = false;
+        if (snapshot.exists()) {
+          snapshot.forEach(child => {
+            const data = child.val();
+            if ((data.email && data.email.trim().toLowerCase() === email.trim().toLowerCase()) || (data.phone && data.phone.trim() === phone.trim())) {
+              alreadyExists = true;
+            }
+          });
+        }
+        if (alreadyExists) {
+          setSuccess(true);
+          setLoading(false);
+          return;
+        }
+        // Save to 'prebook' node with a unique key
+        const newRef = push(prebookRef);
+        await setDb(newRef, {
+          name,
+          email,
+          phone,
+          createdAt: new Date().toISOString(),
+        });
+        setSuccess(true);
+        setName("");
+        setEmail("");
+        setPhone("");
+      } catch (err) {
+        setError("Failed to submit. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (checking) {
+      return <div className="text-center py-8">Checking prebooking status...</div>;
+    }
+
+    if (success) {
+      return (
+        <div className="max-w-md mx-auto mb-20 p-6 rounded-xl border shadow-md bg-white text-center">
+          <h2 className="text-2xl font-bold mb-2 text-[#4300FF]">Thank you for booking your slot!</h2>
+          <p className="text-gray-700 mb-4">We have received your details. </p>
+          <div className="bg-[#e0ffe7] text-[#22c55e] font-semibold rounded p-3 mt-2">
+            🎉 As a thank you, you get a <span className="text-[#4300FF]">special discount</span> on our Premium Membership!<br/>
+          
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-md mx-auto mb-20 p-6 rounded-xl border shadow-md bg-white">
+        <h2 className="text-2xl font-bold mb-4 text-[#4300FF] text-center">Book a Slot for Premium Counselling</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Name</label>
+            <input
+              type="text"
+              className="w-full border rounded px-3 py-2"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              disabled={success}
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <input
+              type="email"
+              className="w-full border rounded px-3 py-2"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              disabled={success}
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Phone Number</label>
+            <input
+              type="tel"
+              className="w-full border rounded px-3 py-2"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              maxLength={10}
+              pattern="\d{10}"
+              required
+              placeholder="Enter 10-digit phone number"
+              disabled={success}
+            />
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <button
+            type="submit"
+            className="w-full py-2 rounded bg-[#4300FF] text-white font-semibold"
+            disabled={loading || success}
+          >
+            {loading ? "Submitting..." : "Book Slot"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
   return (
     <>
       {/* Razorpay Script */}
@@ -298,6 +473,7 @@ export default function PremiumPage() {
             </a>
           </div>
         ) : (
+<<<<<<< HEAD
           <div className="max-w-md mx-auto mb-20">
             {packages.map((pkg, i) => (
               <motion.div
@@ -332,6 +508,9 @@ export default function PremiumPage() {
               </motion.div>
             ))}
           </div>
+=======
+          <BookSlotForm />
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
         )}
 
         {/* Feature Highlights */}

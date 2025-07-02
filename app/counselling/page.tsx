@@ -18,7 +18,11 @@ const counsellingServices = [
 		color: "bg-gradient-to-r from-blue-500 to-blue-700",
 	},
 	{
+<<<<<<< HEAD
 		title: "Rankwise Clg Prediction",
+=======
+		title: "Cutoff Predictor",
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 		href: "/counselling/predictor",
 		icon: <FaBrain />,
 		description: (

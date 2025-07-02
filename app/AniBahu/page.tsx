@@ -11,6 +11,10 @@ import ClientReviewAdmin from "./ClientReviewAdmin";
 import BannerAdmin from "./BannerAdmin";
 import FeedbackImageAdmin from "./FeedbackImageAdmin";
 import MentorshipRequestTable from "./MentorshipRequestTable";
+<<<<<<< HEAD
+=======
+import PrebookAdmin from "./PrebookAdmin";
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 import { get, ref as dbRef, set } from "firebase/database";
 import { database, auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -52,6 +56,14 @@ const adminSections = [
 		label: "1:1 Mentorship Requests",
 		desc: "View and manage 1:1 mentorship session requests.",
 	},
+<<<<<<< HEAD
+=======
+	{
+		key: "prebook",
+		label: "Prebooked Users",
+		desc: "View and manage users who have prebooked sessions.",
+	},
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 ];
 
 export default function AdminPage() {
@@ -269,6 +281,20 @@ export default function AdminPage() {
 							<MentorshipRequestTable />
 						</div>
 					)}
+<<<<<<< HEAD
+=======
+					{section === "prebook" && (
+						<div>
+							<h2 className="text-2xl font-bold mb-4 text-[#4300FF]">
+								Prebooked Users
+							</h2>
+							<p className="mb-4">
+								View and manage users who have prebooked sessions.
+							</p>
+							<PrebookAdmin />
+						</div>
+					)}
+>>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 				</section>
 			</div>
 		</main>
