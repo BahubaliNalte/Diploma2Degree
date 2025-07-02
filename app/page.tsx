@@ -172,19 +172,11 @@ export default function HomePage() {
           transition={{ delay: 0.6 }}
           className="mt-10 flex flex-col sm:flex-row justify-center gap-4"
         >
-<<<<<<< HEAD
           <Link href="/counselling/premium" className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 rounded-full font-bold shadow-md hover:from-yellow-500 hover:to-yellow-600 transition">
             Premium Counselling
           </Link>
           <Link href="/counselling" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full transition">Start Counselling</Link>
           <Link href="/project-request" className="border border-blue-600 text-blue-600 px-6 py-3 rounded-full hover:bg-blue-50 transition">Request a Project</Link>
-=======
-          <Link href="/counselling" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full transition">Start Counselling</Link>
-          <Link href="/project-request" className="border border-blue-600 text-blue-600 px-6 py-3 rounded-full hover:bg-blue-50 transition">Request a Project</Link>
-          <Link href="/counselling/premium" className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 rounded-full font-bold shadow-md hover:from-yellow-500 hover:to-yellow-600 transition">
-            Premium Counselling
-          </Link>
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
         </motion.div>
       </section>
 

@@ -215,7 +215,6 @@ export default function CollegeListPage() {
     "Textile Technology",
     "VLSI"
   ];
-<<<<<<< HEAD
 
   // Branch mapping for display/normalization
 const branchMap: { [key: string]: string } = {
@@ -280,12 +279,6 @@ Object.entries(branchMap).forEach(([variant, full]) => {
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
   const allBranches = unique([...dataBranches, ...requiredBranches.map(normalizeBranch)]).sort((a, b) => a.localeCompare(b));
-=======
-  const dataBranches = unique(colleges.map((c) => c["Course Name"]))
-    .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b));
-  const allBranches = unique([...dataBranches, ...requiredBranches]).sort((a, b) => a.localeCompare(b));
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
   // Merge unique categories from data and required list
   const categories = unique([
     ...colleges.flatMap((c) => c.Cutoffs ? c.Cutoffs.map((cut: Cutoff) => cut.Category) : []),
@@ -306,7 +299,6 @@ Object.entries(branchMap).forEach(([variant, full]) => {
     EWS: ["EWS"],
     "Minority": ["MI"],
     "PWD (Disability)": ["PWD-O", "PWDA-SEBC", "PWDR-OBC", "PWDR-SC", "PWDR-SEBC"],
-<<<<<<< HEAD
     DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-NTC", "DEFR-NTD", "DEFA-OBC"]
   };
   const mainCategories = Object.keys(mainCategoryMap);
@@ -386,28 +378,6 @@ const cityDistrictMap: { [key: string]: string[] } = {
       const variants = reverseBranchMap[normalized] || [normalized];
       matchesStream = variants.includes(college["Course Name"]) || normalizeBranch(college["Course Name"]) === normalized;
     }
-=======
-    DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-DBC", "DEFA-OBC"]
-  };
-  const mainCategories = Object.keys(mainCategoryMap);
-
-// City and district mapping for Maharashtra
- const cityDistrictMap: { [key: string]: string[] } = {
-  "Mumbai": ["Mumbai", "Andheri", "Panvel", "Thane", "Kalyan", "Ulhasnagar", "Vasai", "Virar", "Navi Mumbai", "Dombivli"],
-  "Pune": ["Pune", "Ravet", "Narhe", "Wagholi", "Lonavala", "Pisoli", "Sasewadi"],
-  "Nagpur": ["Nagpur", "Ramtek"],
-  "Aurangabad": ["Aurangabad", "Sambhajinagar"],
-  "Nashik": ["Nashik", "Ohar"],
-  "Kolhapur": ["Kolhapur", "Warananagar", "Gadhinglaj"],
-  "Solapur": ["Solapur", "Pandharpur"]
-};
-
-  // Filtering logic
-  const filtered = colleges.filter((college) => {
-   const cityList = cityDistrictMap[location] || [location];
-const matchesLocation = location ? cityList.includes(college.City) : true;
-    const matchesStream = stream ? college["Course Name"] === stream : true;
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
     let minCutoff = null;
     if (college.Cutoffs && college.Cutoffs.length > 0 && category) {
       const cat = college.Cutoffs.find((c) => c.Category === category);
@@ -520,11 +490,7 @@ const matchesLocation = location ? cityList.includes(college.City) : true;
           required
         >
           <option value="">Select Branch</option>
-<<<<<<< HEAD
           {requiredBranches.sort((a, b) => a.localeCompare(b)).map((s, i) => (
-=======
-          {allBranches.map((s, i) => (
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
             <option key={i} value={s}>{s}</option>
           ))}
         </select>
@@ -602,11 +568,7 @@ const matchesLocation = location ? cityList.includes(college.City) : true;
                         </div>
                         <div className="flex flex-wrap gap-4 text-gray-700 text-base mb-2">
                           <span>📍 <span className="font-medium">{college.City}</span></span>
-<<<<<<< HEAD
                           <span>🎓 <span className="font-medium">{normalizeBranch(college["Course Name"])}{/* Show normalized branch */}</span></span>
-=======
-                          <span>🎓 <span className="font-medium">{college["Course Name"]}</span></span>
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                           <span className="font-semibold text-gray-800">Cutoff ({category}):</span>

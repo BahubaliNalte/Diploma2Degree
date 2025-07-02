@@ -70,7 +70,6 @@ export default function PredictorPage() {
     "NT(D)": ["GNTD", "LNTD"],
     "OPEN / GENERAL": ["GOPEN", "LOPEN", "PWD-O", "GORD"],
     EWS: ["EWS"],
-<<<<<<< HEAD
     "Minority": ["MI"], 
     "PWD (Disability)": ["PWD-O", "PWDA-SEBC", "PWDR-OBC", "PWDR-SC", "PWDR-SEBC" ,"PWD-NTA","NTB","NTC","NTA","st"],
     DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-NTC", "DEFR-NTD" , "DEFA-OBC"]
@@ -185,26 +184,6 @@ Object.entries(branchMap).forEach(([variant, full]) => {
 });
   // Normalize branch names for filtering and display
   const normalizeBranch = (branch: string) => branchMap[branch] || branch;
-=======
-    "Minority": ["Mi"], 
-    "PWD (Disability)": ["PWD-O", "PWDA-SEBC", "PWDR-OBC", "PWDR-SC", "PWDR-SEBC"],
-    DEFENCE: ["DEFR-OBC", "DEFR-SC", "DEFR-ST", "DEFR-SEBC", "DEFR-NTA", "DEFR-NTB", "DEFR-DBC", "DEFA-OBC"]
-  };
-  const mainCategories = Object.keys(mainCategoryMap);
-
-  // Mapping of city/district groups for broader search
-  const cityDistrictMap: { [key: string]: string[] } = {
-    "Mumbai": ["Mumbai", "Andheri", "Panvel", "Thane", "Kalyan", "Ulhasnagar", "Vasai", "Virar", "Navi Mumbai", "Dombivli"],
-    "Pune": ["Pune", "Ravet", "Narhe", "Wagholi", "Lonavala", "Pisoli", "Sasewadi"],
-    "Nagpur": ["Nagpur", "Ramtek"],
-    "Aurangabad": ["Aurangabad", "Sambhajinagar"],
-    "Nashik": ["Nashik", "Ohar"],
-    "Kolhapur": ["Kolhapur", "Warananagar", "Gadhinglaj"],
-    "Solapur": ["Solapur", "Pandharpur"]
-  };
-
-  // Branches list (union of all branches in data + required list)
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
   const requiredBranches = [
     "5G",
     "Aeronautical Engineering",
@@ -231,17 +210,10 @@ Object.entries(branchMap).forEach(([variant, full]) => {
     "Structural Engineering",
     "VLSI"
   ];
-<<<<<<< HEAD
   const dataBranches = unique(colleges.map((c) => normalizeBranch(c["Course Name"])))
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
   const allBranches = unique([...dataBranches, ...requiredBranches.map(normalizeBranch)]).sort((a, b) => a.localeCompare(b));
-=======
-  const dataBranches = unique(colleges.map((c) => c["Course Name"]))
-    .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b));
-  const allBranches = unique([...dataBranches, ...requiredBranches]).sort((a, b) => a.localeCompare(b));
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
 
   // Extended list of Maharashtra cities including new entries from user
   const maharashtraCities = [
@@ -249,7 +221,6 @@ Object.entries(branchMap).forEach(([variant, full]) => {
   ].sort((a, b) => a.localeCompare(b));
 
   const handlePredict = () => {
-<<<<<<< HEAD
     // Reverse city mapping: if a location is selected, get all related cities for that location
     let cityList: string[] = [location];
     if (location && cityDistrictMap[location.toLowerCase()]) {
@@ -270,13 +241,6 @@ Object.entries(branchMap).forEach(([variant, full]) => {
       const collegeBranch = normalizeBranch(college["Course Name"]);
       // Match if college branch is any of the selected branch's variants
       const matchesStream = stream ? selectedBranchVariants.includes(college["Course Name"]) : true;
-=======
-    // Use cityDistrictMap for broader city/district matching
-    const cityList = cityDistrictMap[location] || [location];
-    const result = colleges.filter((college) => {
-      const matchesStream = stream ? college["Course Name"] === stream : true;
-      const matchesLocation = location ? cityList.includes(college.City) : true;
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
       let minRank = null;
       if (college.Cutoffs && college.Cutoffs.length > 0 && category) {
         const cat = college.Cutoffs.find((c) => c.Category === category);
@@ -342,11 +306,7 @@ Object.entries(branchMap).forEach(([variant, full]) => {
           required
         >
           <option value="">Select Branch</option>
-<<<<<<< HEAD
           {requiredBranches.sort((a, b) => a.localeCompare(b)).map((s, i) => (
-=======
-          {allBranches.map((s, i) => (
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
             <option key={i} value={s}>{s}</option>
           ))}
         </select>
@@ -438,11 +398,7 @@ Object.entries(branchMap).forEach(([variant, full]) => {
                       </div>
                       <div className="flex flex-wrap gap-4 text-gray-700 text-base mb-2">
                         <span>📍 <span className="font-medium">{college.City}</span></span>
-<<<<<<< HEAD
                         <span>🎓 <span className="font-medium">{normalizeBranch(college["Course Name"])}{/* Show normalized branch */}</span></span>
-=======
-                        <span>🎓 <span className="font-medium">{college["Course Name"]}</span></span>
->>>>>>> 319ab366af1a7894d15d8a336cf1997cea2e37e1
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                         <span className="font-semibold text-gray-800">Cutoff ({category}):</span>
