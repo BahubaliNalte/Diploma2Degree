@@ -44,10 +44,6 @@ Diploma2Degree is a web application designed to help diploma students find the b
 
 6. **Open [http://localhost:3000](http://localhost:3000) in your browser.**
 
-## Screenshots
-
-![College Predictor](screenshots/predictor.png)
-![Counseling Dashboard](screenshots/dashboard.png)
 
 ## Contributing
 
